@@ -5,10 +5,12 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
-from .models import Posts, Category
+from .models import Posts, Category, AboutUs
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from .forms import ContactForm
+
 
 
 
@@ -17,15 +19,6 @@ from django.shortcuts import get_object_or_404
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
-
-#static data
-# posts = [
-#         {'id':1,'title': 'post1', 'content':'content of post1'},
-#         {'id':2,'title': 'post2', 'content':'content of post2'},
-#         {'id':3,'title': 'post3', 'content':'content of post3'},
-#         {'id':4,'title': 'post4', 'content':'content of post4'}
-#   
-#]
 
 
 
@@ -176,3 +169,25 @@ def old_url_redirect(request):
 
 def newurl(request):
     return HttpResponse("this is new url")
+
+def contact(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+
+        logger = logging.getLogger("TESTING")
+        if form.is_valid():
+            logger.debug(f'POST Data is {form.cleaned_data['name']} {form.cleaned_data['email']} {form.cleaned_data['message']}')
+            #send email or save in database
+            success_message = 'Your Email has been sent!'
+            return render(request,'contact.html', {'form':form,'success_message':success_message})
+        else:
+            logger.debug('Form validation failure')
+        return render(request,'contact.html', {'form':form, 'name': name, 'email':email, 'message': message})
+    return render(request,'contact.html')
+
+def about(request):
+    about_content = AboutUs.objects.first().content
+    return render(request, 'about.html',{'about_content':about_content})

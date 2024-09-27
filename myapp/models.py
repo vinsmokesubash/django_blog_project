@@ -27,4 +27,5 @@ class Posts(models.Model):
     class Meta:
         verbose_name_plural = "Posts"  # Corrects the plural name in the admin
 
-
+class AboutUs(models.Model):
+    content=models.TextField()
